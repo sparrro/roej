@@ -1,3 +1,7 @@
+// återstår: funktion(er) för att kolla om man vunnit/förlorat; grej som visar hur länge man spelat och hur många minor man markerat
+
+
+
 const playingField = document.querySelector('.playing-field');
 const widthField = document.getElementById('width');
 const heightField = document.getElementById('height');
@@ -40,7 +44,7 @@ function renderPlayingField(xx, yy, mines) {
     })
     boxes.forEach(box => {
         box.addEventListener('click', ()=> {
-            if (gameStarted == false) {
+            if (gameStarted == false) { //första klickningen
                 placeMines(box.id, mines);
                 placeNumbers(x, y);
                 gameStarted = true
@@ -52,7 +56,11 @@ function renderPlayingField(xx, yy, mines) {
             //console.log(box)
             //hide(document.querySelector(`#${box.id} .cover`))
             uncover(box, x, y)
-            //
+            // kolla efter seger eller nederlag
+            checkDefeat();
+            if (!gameFinished) {
+                checkVictory()
+            }
         })
         box.addEventListener('contextmenu', (e) => {
             e.preventDefault()
@@ -69,6 +77,36 @@ function renderPlayingField(xx, yy, mines) {
 
 
 
+
+function checkDefeat() {
+    fieldBoxes.forEach(box => {
+        if (box.lastChild.classList.contains('invisible') && box.firstChild.innerHTML == '💣') { //om det finns en öppnad ruta med en bomb i
+            gameFinished = true //då har man förlorat
+            console.log('förlust')
+        }
+    })
+}
+
+
+function checkVictory() {
+    let remainingSafe = 0
+    for (let box of fieldBoxes) { // letar efter säkra rutor som inte öppnats
+        if (box.firstChild.innerHTML != '💣' && !box.lastChild.classList.contains('invisible')) {
+            remainingSafe++
+        }
+    }
+    if (remainingSafe == 0) { //om den inte hittar några
+        gameFinished = true //då har man vunnit
+        console.log('seger')
+    }
+}
+
+
+
+
+
+
+
 //funktion som täcker upp en ruta och, om den är tom, åkallar sig själv på angränsande rutor
 function uncover(box, x, y) {
     if (box.lastChild.innerHTML == ``) {
@@ -76,14 +114,8 @@ function uncover(box, x, y) {
         if (box.firstChild.innerHTML == ``) {
             let adjacentBoxes = findAdjacent(box, x, y);
             adjacentBoxes.forEach(boxx => {
-                //if (boxx.lastChild.innerHTML == '') { //alternativ till rekursion
-                //    hide(boxx.lastChild);
-                    // fattigmansrekursion
-                    
-                    //
-                //}
-                if (!boxx.lastChild.classList.contains('invisible')) { // hallalujaesh eller hur det nu stavas
-                    uncover(boxx, x, y) //call stack size exceeded
+                if (!boxx.lastChild.classList.contains('invisible')) { // hindrar att den bara studsar fram och tillbaka mellan samma två för alltid
+                    uncover(boxx, x, y) //call stack size exceeded inte längre
                 }
             })
         }
