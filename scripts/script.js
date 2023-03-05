@@ -42,12 +42,14 @@ function renderPlayingField(xx, yy, mines) {
         box.addEventListener('click', ()=> {
             if (gameStarted == false) {
                 placeMines(box.id, mines);
-                placeNumbers(x, y)
+                placeNumbers(x, y);
+                gameStarted = true
             }
             //bryt ut funktion som sätter ut siffrorna
             //
 
             // funktion som täcker upp en ruta
+            //console.log(box)
             //hide(document.querySelector(`#${box.id} .cover`))
             uncover(box, x, y)
             //
@@ -69,12 +71,15 @@ function renderPlayingField(xx, yy, mines) {
 
 //funktion som täcker upp en ruta och, om den är tom, åkallar sig själv på angränsande rutor
 function uncover(box, x, y) {
-    if (document.querySelector(`#${box.id} .cover`).innerHTML == ``) {
-        hide(document.querySelector(`#${box.id} .cover`));
+    if (box.lastChild.innerHTML == ``) {
+        hide(box.lastChild);
         if (box.firstChild.innerHTML == ``) {
             let adjacentBoxes = findAdjacent(box, x, y);
             adjacentBoxes.forEach(boxx => {
-                uncover(boxx, x, y)
+                if (boxx.lastChild.innerHTML == '') {
+                    hide(boxx.lastChild)
+                }
+                //uncover(boxx, x, y) //call stack size exceeded
             })
         }
     }
