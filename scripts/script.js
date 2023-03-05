@@ -76,20 +76,15 @@ function uncover(box, x, y) {
         if (box.firstChild.innerHTML == ``) {
             let adjacentBoxes = findAdjacent(box, x, y);
             adjacentBoxes.forEach(boxx => {
-                if (boxx.lastChild.innerHTML == '') {
-                    hide(boxx.lastChild);
+                //if (boxx.lastChild.innerHTML == '') { //alternativ till rekursion
+                //    hide(boxx.lastChild);
                     // fattigmansrekursion
-                    if (boxx.firstChild.innerHTML == ``) {
-                        let adjacentBoxes = findAdjacent(boxx, x, y);
-                        adjacentBoxes.forEach(boxxx => {
-                            if (boxxx.lastChild.innerHTML == '') {
-                                hide(boxxx.lastChild)
-                            }
-                        })
-                    }
+                    
                     //
+                //}
+                if (!boxx.lastChild.classList.contains('invisible')) { // hallalujaesh eller hur det nu stavas
+                    uncover(boxx, x, y) //call stack size exceeded
                 }
-                //uncover(boxx, x, y) //call stack size exceeded
             })
         }
     }
