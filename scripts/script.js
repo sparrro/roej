@@ -48,8 +48,8 @@ function renderPlayingField(xx, yy, mines) {
             //
 
             // funktion som täcker upp en ruta
-            hide(document.querySelector(`#${box.id} .cover`))
-            //uncover(box, x, y)
+            //hide(document.querySelector(`#${box.id} .cover`))
+            uncover(box, x, y)
             //
         })
         box.addEventListener('contextmenu', (e) => {
@@ -74,7 +74,7 @@ function uncover(box, x, y) {
         if (box.firstChild.innerHTML == ``) {
             let adjacentBoxes = findAdjacent(box, x, y);
             adjacentBoxes.forEach(boxx => {
-                uncover(boxx)
+                uncover(boxx, x, y)
             })
         }
     }
