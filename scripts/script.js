@@ -56,8 +56,13 @@ function renderPlayingField(x, y, mines) {
                 }
 
                 adjacentBoxes.forEach(boxx => {
-                    
-                })
+                    if (boxx.firstChild.innerHTML == '💣') {
+                        adjacentMines++
+                    }
+                });
+                if (adjacentMines>0) {
+                    box.firstChild.innerHTML = adjacentMines
+                }
             }
             hide(document.querySelector(`#${box.id} .cover`))
         })
