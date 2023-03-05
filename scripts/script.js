@@ -77,7 +77,17 @@ function uncover(box, x, y) {
             let adjacentBoxes = findAdjacent(box, x, y);
             adjacentBoxes.forEach(boxx => {
                 if (boxx.lastChild.innerHTML == '') {
-                    hide(boxx.lastChild)
+                    hide(boxx.lastChild);
+                    // fattigmansrekursion
+                    if (boxx.firstChild.innerHTML == ``) {
+                        let adjacentBoxes = findAdjacent(boxx, x, y);
+                        adjacentBoxes.forEach(boxxx => {
+                            if (boxxx.lastChild.innerHTML == '') {
+                                hide(boxxx.lastChild)
+                            }
+                        })
+                    }
+                    //
                 }
                 //uncover(boxx, x, y) //call stack size exceeded
             })
