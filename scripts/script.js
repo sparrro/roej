@@ -4,16 +4,16 @@
 
 const playingField = document.querySelector('.playing-field');
 const widthField = document.getElementById('width');
-const heightField = document.getElementById('height');
 const minesField = document.getElementById('mines');
-const startBtn = document.querySelector('button')
+const startBtn = document.querySelector('button');
+const mineCounter = document.querySelector('.mines-counter')
 let fieldBoxes = []
 let gameStarted = false
 let gameFinished = false
 
 
 startBtn.addEventListener('click', () => {
-    renderPlayingField(widthField.value, heightField.value, minesField.value)
+    renderPlayingField(widthField.value, minesField.value)
 })
 
 
@@ -23,30 +23,32 @@ function hide(element) {
     element.classList.add('invisible')
 }
 
-function renderPlayingField(xx, yy, mines) {
+function renderPlayingField(xx, mines) {
     playingField.innerHTML = '';
     fieldBoxes = [];
     gameFinished = false;
     gameStarted = false;
+    let minesRemaining = Number(mines);
+    mineCounter.innerHTML = mineCounter.innerHTML = `Återstående minor: ${minesRemaining}`
     let x = Number(xx); //kände inte för att gå igenom och byta om alla ställen jag använt dem
-    let y = Number(yy)
-    for (let i = 0; i<x*y; i++) {
+    for (let i = 0; i<x*x; i++) {
         let box = document.createElement('aside');
         box.classList.add('box');
         box.id = `box${i}`;
         box.innerHTML = `<p></p>
         <div class="cover"></div>`;
         playingField.appendChild(box);
-    }
-    const boxes = document.querySelectorAll('.box')
-    boxes.forEach(box => {
         fieldBoxes.push(box)
-    })
-    boxes.forEach(box => {
+    }
+    //const boxes = document.querySelectorAll('.box')
+    //fieldBoxes.forEach(box => {
+    //    fieldBoxes.push(box)
+    //})
+    fieldBoxes.forEach(box => {
         box.addEventListener('click', ()=> {
             if (gameStarted == false) { //första klickningen
                 placeMines(box.id, mines);
-                placeNumbers(x, y);
+                placeNumbers(x);
                 gameStarted = true
             }
             //bryt ut funktion som sätter ut siffrorna
@@ -55,7 +57,7 @@ function renderPlayingField(xx, yy, mines) {
             // funktion som täcker upp en ruta
             //console.log(box)
             //hide(document.querySelector(`#${box.id} .cover`))
-            uncover(box, x, y)
+            uncover(box, x)
             // kolla efter seger eller nederlag
             checkDefeat();
             if (!gameFinished) {
@@ -64,14 +66,20 @@ function renderPlayingField(xx, yy, mines) {
         })
         box.addEventListener('contextmenu', (e) => {
             e.preventDefault()
-            if (document.querySelector(`#${box.id} .cover`).innerHTML == ``) {
-                document.querySelector(`#${box.id} .cover`).innerHTML = `&#128681;`
-            } else {
-                document.querySelector(`#${box.id} .cover`).innerHTML = ``
+            if (!box.lastChild.classList.contains('invisible')) {
+                if (document.querySelector(`#${box.id} .cover`).innerHTML == ``) {
+                    document.querySelector(`#${box.id} .cover`).innerHTML = `&#128681;`;
+                    minesRemaining--;
+                    mineCounter.innerHTML = `Återstående minor: ${minesRemaining}`
+                } else {
+                    document.querySelector(`#${box.id} .cover`).innerHTML = ``;
+                    minesRemaining++;
+                    mineCounter.innerHTML = `Återstående minor: ${minesRemaining}`
+                }
             }
         })
     })
-    playingField.style.gridTemplate = `repeat(${y}, 1fr) / repeat(${x}, 1fr)`;
+    playingField.style.gridTemplate = `repeat(${x}, 1fr) / repeat(${x}, 1fr)`;
 }
 
 
@@ -108,14 +116,14 @@ function checkVictory() {
 
 
 //funktion som täcker upp en ruta och, om den är tom, åkallar sig själv på angränsande rutor
-function uncover(box, x, y) {
+function uncover(box, x) {
     if (box.lastChild.innerHTML == ``) {
         hide(box.lastChild);
         if (box.firstChild.innerHTML == ``) {
-            let adjacentBoxes = findAdjacent(box, x, y);
+            let adjacentBoxes = findAdjacent(box, x);
             adjacentBoxes.forEach(boxx => {
                 if (!boxx.lastChild.classList.contains('invisible')) { // hindrar att den bara studsar fram och tillbaka mellan samma två för alltid
-                    uncover(boxx, x, y) //call stack size exceeded inte längre
+                    uncover(boxx, x) //call stack size exceeded inte längre
                 }
             })
         }
@@ -126,12 +134,12 @@ function uncover(box, x, y) {
 
 
 //funktion som placerar ut siffror
-function placeNumbers(x, y) {
+function placeNumbers(x) {
     fieldBoxes.forEach(box => {
         if (box.firstChild.innerHTML == '') {
             let adjacentMines = 0;
             // bryt ut funktion som returnerar angränsande rutor
-            let adjacentBoxes = findAdjacent(box, x, y)
+            let adjacentBoxes = findAdjacent(box, x)
             //
             adjacentBoxes.forEach(boxx => {
                 if (boxx.firstChild.innerHTML == '💣') {
@@ -148,7 +156,7 @@ function placeNumbers(x, y) {
 
 
 //hittar angränsande rutor
-function findAdjacent(box, x, y) {
+function findAdjacent(box, x) {
     let adjacentBoxes = [];
     if (fieldBoxes.indexOf(box) > x-1) { // om inte i högsta raden
         adjacentBoxes.push(fieldBoxes[fieldBoxes.indexOf(box)-x]);
@@ -159,7 +167,7 @@ function findAdjacent(box, x, y) {
             adjacentBoxes.push(fieldBoxes[fieldBoxes.indexOf(box)-x-1])
         }
     }
-    if (fieldBoxes.indexOf(box) < y*(x-1)) { // om inte i lägsta raden
+    if (fieldBoxes.indexOf(box) < x*(x-1)) { // om inte i lägsta raden
         adjacentBoxes.push(fieldBoxes[fieldBoxes.indexOf(box)+x])
         //console.log(typeof fieldBoxes.indexOf(box))
         //console.log(typeof (fieldBoxes.indexOf(box)+x)) //jävla lösa typjävlar vad fan blir det en sträng för
@@ -187,11 +195,11 @@ function findAdjacent(box, x, y) {
 function placeMines(boxID, numOfMines) {
     let copyArray = fieldBoxes.filter((box) => {
         return box.id != boxID
+        //&& !Array.from(findAdjacent(box)).contains(document.querySelector(`#${boxID}`)) //vill inte funka
     })
     for (let i = 0; i<numOfMines; i++) {
         let mine = copyArray[Math.floor(Math.random()*copyArray.length)]
         mine.firstChild.innerHTML = '&#128163;'
         copyArray.splice(copyArray.indexOf(mine), 1)
     }
-    
 }
